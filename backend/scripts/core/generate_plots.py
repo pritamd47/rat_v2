@@ -405,3 +405,12 @@ def inject_download_links(html_fn, res_name, prefix="../"):
     # save the file
     with open(html_fn, "w") as dst:
         dst.write(str(soup))
+
+
+def main():
+    reservoir_db_path = "/Users/pdas47/phd/rat_v2/backend/data/ancillary/RAT-Reservoirs.geojson"
+    project_dir = "/Users/pdas47/phd/rat_v2"
+    generate_plots(reservoir_db_path, project_dir)
+
+if __name__ == "__main__":
+    main()
