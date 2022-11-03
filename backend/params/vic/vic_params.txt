@@ -19,7 +19,7 @@ FROZEN_SOIL	FALSE
 # AERO_RESIST_CANSNOW AR_406
 # CONTINUEONERROR FALSE
 
-DOMAIN         /houston2/pritam/rat_mekong_v3/backend/params/vic/domain.nc
+DOMAIN         /home/ec2-user/rat_v2/backend/params/vic/domain.nc
 DOMAIN_TYPE    LAT     lat
 DOMAIN_TYPE    LON     lon
 DOMAIN_TYPE    MASK    mask
@@ -37,7 +37,7 @@ DOMAIN_TYPE    XDIM    lon
 #STATE_FORMAT NETCDF4_CLASSIC  # State file format, valid options:
 #NETCDF3_CLASSIC, NETCDF3_64BIT_OFFSET, NETCDF4_CLASSIC, NETCDF4
 
-FORCING1      /houston2/pritam/rat_mekong_v3/backend/data/forcings/forcing_
+FORCING1      /home/ec2-user/rat_v2/backend/data/forcings/forcing_
 FORCE_TYPE    AIR_TEMP 	   temp
 FORCE_TYPE    PREC         prec
 FORCE_TYPE    PRESSURE 	   air_pressure
@@ -47,15 +47,15 @@ FORCE_TYPE    VP           vapor_pressure
 FORCE_TYPE    WIND         wind
 WIND_H        10.0
 
-PARAMETERS      /houston2/pritam/rat_mekong_v3/backend/params/vic/params_all_mekong.nc
+PARAMETERS      /home/ec2-user/rat_v2/backend/params/vic/params_all_mekong.nc
 LAI_SRC         FROM_VEGPARAM
 FCAN_SRC        FROM_DEFAULT
 ALB_SRC         FROM_VEGPARAM
 NODES           2
 SNOW_BAND       FALSE
 
-RESULT_DIR  /houston2/pritam/rat_mekong_v3/backend/data/vic_results_conf/
-LOG_DIR     /houston2/pritam/rat_mekong_v3/backend/data/vic_logs_conf/
+RESULT_DIR  /home/ec2-user/rat_v2/backend/data/vic_results_conf/
+LOG_DIR     /home/ec2-user/rat_v2/backend/data/vic_logs_conf/
 OUTFILE     nc_fluxes
 COMPRESS    FALSE
 OUT_FORMAT  NETCDF4
