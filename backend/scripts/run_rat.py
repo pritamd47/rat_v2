@@ -4,6 +4,7 @@ import datetime
 import argparse
 
 import boto3
+import shutil
 
 from core.run_vic import VICRunner
 from utils.logging import init_logger, NOTIFICATION
@@ -78,85 +79,100 @@ def main():
     # )
     # #------------ Process Data End ------------#
 
+    # # download from s3
+    # s3 = boto3.client('s3')
+    # s3.download_file('saswe-meteorological-data', 'combined_data.nc', combined_datapath)
+
+    # #------ MetSim Data Processing Begin ------#
+    # # Process data to metsim format
+    # metsim_inputs_dir = os.path.join(config['GLOBAL']['project_dir'], 'backend', 'data', 'metsim_inputs')
+    # ms_state, ms_input_data = generate_state_and_inputs(
+    #     config['GLOBAL']['previous_end'],
+    #     config['GLOBAL']['end'],
+    #     combined_datapath, 
+    #     metsim_inputs_dir
+    # )
+    # #------- MetSim Data Processing End -------#
+
+
+    # #-------------- Metsim Begin --------------#
+    # with MSParameterFile(
+    #     config['METSIM']['metsim_workspace'], 
+    #     config['GLOBAL']['previous_end'],
+    #     config['GLOBAL']['end'],
+    #     config['METSIM']['metsim_param_file'], 
+    #     ms_input_data, 
+    #     ms_state
+    #     ) as m:
+        
+    #     ms = MetSimRunner(
+    #         m.ms_param_path,
+    #         config['METSIM']['metsim_env'],
+    #         config['GLOBAL']['conda_hook'],
+    #         m.results,
+    #         config['GLOBAL']['multiprocessing']
+    #     )
+    #     log.log(NOTIFICATION, f'Starting metsim from {config["GLOBAL"]["previous_end"].strftime("%Y-%m-%d")} to {config["GLOBAL"]["end"].strftime("%Y-%m-%d")}')
+    #     ms.run_metsim()
+    #     # # prefix = ms.diasgg_results(config['VIC']['vic_forcings_dir'])
+    #     prefix = ms.convert_to_vic_forcings(config['VIC']['vic_forcings_dir'])
+    # #--------------- Metsim End ---------------#
+
+
+    # # --------------- VIC Begin ----------------# 
+    # with VICParameterFile(config) as p:
+    #     vic = VICRunner(
+    #         config['VIC']['vic_env'],
+    #         p.vic_param_path,
+    #         p.vic_result_file,
+    #         None,            # Pass None as the route input directory, since we are not disaggregating the results   # config['ROUTING']['route_input_dir'], 
+    #         config['GLOBAL']['conda_hook']
+    #     )
+    #     vic_result_fn = p.vic_result_file
+    #     vic.run_vic(np=config['GLOBAL']['multiprocessing'])
+    #     # vic.disagg_results()
+    #     vic_startdate = p.vic_startdate
+    #     vic_enddate = p.vic_enddate
+    # #---------------- VIC End -----------------#
+
+    # # upload to s3
+    # s3.upload_file(vic_result_fn, 'saswe-meteorological-data', 'vic_results.nc')
+
+
     # download from s3
     s3 = boto3.client('s3')
-    s3.download_file('saswe-meteorological-data', 'combined_data.nc', combined_datapath)
+    vic_result_fn = os.path.join(config['GLOBAL']['project_dir'], 'backend/data/disagg_results/disagg_results.zip')
+    s3.download_file('saswe-meteorological-data', 'vic_results.nc', vic_result_fn)
+    shutil.unpack_archive(vic_result_fn, config['ROUTING']['route_input_dir'])
 
-    #------ MetSim Data Processing Begin ------#
-    # Process data to metsim format
-    metsim_inputs_dir = os.path.join(config['GLOBAL']['project_dir'], 'backend', 'data', 'metsim_inputs')
-    ms_state, ms_input_data = generate_state_and_inputs(
-        config['GLOBAL']['previous_end'],
-        config['GLOBAL']['end'],
-        combined_datapath, 
-        metsim_inputs_dir
+    vic_startdate = config['GLOBAL']['begin'] + datetime.timedelta(days=90)
+    vic_enddate = config['GLOBAL']['end']
+    #------------- Routing Being --------------#
+    with RouteParameterFile(config, vic_startdate, vic_enddate, clean=False) as r:
+        route = RoutingRunner(    
+            config['GLOBAL']['project_dir'], 
+            r.params['output_dir'], 
+            # "extras/vic_cal_route_res/",
+            config['ROUTING']['route_inflow_dir'], 
+            config['ROUTING']['route_model'],
+            r.route_param_path, 
+            # 'extras/vic_cal_route_res/route_param.txt',
+            r.params['flow_direction_file'], 
+            config['ROUTING']['station_latlon_path'],
+            r.params['station']
+        )
+        route.create_station_file()
+        route.run_routing()
+        route.generate_inflow()
+    #-------------- Routing End ---------------#
+
+    zipped_inflow_fn = os.path.join(config['ROUTING']['route_workspace'], "inflow")
+    shutil.make_archive(
+        zipped_inflow_fn,
+        'zip', 
+        os.path.join(config['ROUTING']['route_inflow_dir'])
     )
-    #------- MetSim Data Processing End -------#
-
-
-    #-------------- Metsim Begin --------------#
-    with MSParameterFile(
-        config['METSIM']['metsim_workspace'], 
-        config['GLOBAL']['previous_end'],
-        config['GLOBAL']['end'],
-        config['METSIM']['metsim_param_file'], 
-        ms_input_data, 
-        ms_state
-        ) as m:
-        
-        ms = MetSimRunner(
-            m.ms_param_path,
-            config['METSIM']['metsim_env'],
-            config['GLOBAL']['conda_hook'],
-            m.results,
-            config['GLOBAL']['multiprocessing']
-        )
-        log.log(NOTIFICATION, f'Starting metsim from {config["GLOBAL"]["previous_end"].strftime("%Y-%m-%d")} to {config["GLOBAL"]["end"].strftime("%Y-%m-%d")}')
-        ms.run_metsim()
-        # # prefix = ms.diasgg_results(config['VIC']['vic_forcings_dir'])
-        prefix = ms.convert_to_vic_forcings(config['VIC']['vic_forcings_dir'])
-    #--------------- Metsim End ---------------#
-
-
-    # --------------- VIC Begin ----------------# 
-    with VICParameterFile(config) as p:
-        vic = VICRunner(
-            config['VIC']['vic_env'],
-            p.vic_param_path,
-            p.vic_result_file,
-            None,            # Pass None as the route input directory, since we are not disaggregating the results   # config['ROUTING']['route_input_dir'], 
-            config['GLOBAL']['conda_hook']
-        )
-        vic_result_fn = p.vic_result_file
-        vic.run_vic(np=config['GLOBAL']['multiprocessing'])
-        # vic.disagg_results()
-        vic_startdate = p.vic_startdate
-        vic_enddate = p.vic_enddate
-    #---------------- VIC End -----------------#
-
-    # upload to s3
-    s3.upload_file(vic_result_fn, 'saswe-meteorological-data', 'vic_results.nc')
-
-#     # vic_startdate = config['GLOBAL']['begin'] + datetime.timedelta(days=90)
-#     # vic_enddate = config['GLOBAL']['end']
-#     #------------- Routing Being --------------#
-#     with RouteParameterFile(config, vic_startdate, vic_enddate, clean=False) as r:
-#         route = RoutingRunner(    
-#             config['GLOBAL']['project_dir'], 
-#             r.params['output_dir'], 
-#             # "extras/vic_cal_route_res/",
-#             config['ROUTING']['route_inflow_dir'], 
-#             config['ROUTING']['route_model'],
-#             r.route_param_path, 
-#             # 'extras/vic_cal_route_res/route_param.txt',
-#             r.params['flow_direction_file'], 
-#             config['ROUTING']['station_latlon_path'],
-#             r.params['station']
-#         )
-#         route.create_station_file()
-#         route.run_routing()
-#         route.generate_inflow()
-#     #-------------- Routing End ---------------#
+    s3.upload_file(zipped_inflow_fn+'.zip', 'saswe-meteorological-data', 'inflow.zip')
 
 #     #----------- Remote Sensing Begin -----------#
 #     # Get Sarea

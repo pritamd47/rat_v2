@@ -65,29 +65,29 @@ VIC PARAMETERS:
   #   - OUT_BASEFLOW
   RESULT_DIR: /home/ec2-user/rat_v2/backend/data/vic_results
 
-# ROUTING:
-#   # Directories
-#   # route_param_dir: /houston2/pritam/rat_mekong_v3/backend/params/routing
-#   route_input_dir: /houston2/pritam/rat_mekong_v3/backend/data/rout_input   # can be set equal to vic output directory later TODO
-#   # route_result_dir: /houston2/pritam/rat_mekong_v3/backend/data/rout_results_conf
-#   route_inflow_dir: /houston2/pritam/rat_mekong_v3/backend/data/inflow
-#   route_workspace: /houston2/pritam/rat_mekong_v3/backend/data/route_workspace
+ROUTING:
+  # Directories
+  # route_param_dir: /home/ec2-user/rat_v2/backend/params/routing
+  route_input_dir: /home/ec2-user/rat_v2/backend/data/rout_input   # can be set equal to vic output directory later TODO
+  # route_result_dir: /home/ec2-user/rat_v2/backend/data/rout_results_conf
+  route_inflow_dir: /home/ec2-user/rat_v2/backend/data/inflow
+  route_workspace: /home/ec2-user/rat_v2/backend/data/route_workspace
 
-#   # Parameter files
-#   route_param_file: /houston2/pritam/rat_mekong_v3/backend/params/routing/route_param.txt  # Will be used to initialize. If not passed, every option must be specified in `ROUTING PARAMETERS` section
-#   station_latlon_path: /houston2/pritam/rat_mekong_v3/backend/data/ancillary/stations_latlon.csv  # In lat lon format
-#   route_model: /houston2/pritam/rat_mekong_v3/backend/models/route_model/rout
+  # Parameter files
+  route_param_file: /home/ec2-user/rat_v2/backend/params/routing/route_param.txt  # Will be used to initialize. If not passed, every option must be specified in `ROUTING PARAMETERS` section
+  station_latlon_path: /home/ec2-user/rat_v2/backend/data/ancillary/stations_latlon.csv  # In lat lon format
+  route_model: /home/ec2-user/rat_v2/backend/models/route_model/rout
 
-# ROUTING PARAMETERS:  # (Optional; if passed, will override the `route_param_file` options)
-#   flow_direction_file: /houston2/pritam/rat_mekong_v3/backend/params/routing/DRT_FDR_VIC.asc
-#   velocity: 1.5
-#   diff: 800
-#   xmask: 5000
-#   fraction: 1
-#   # station_file: null        # Will be generated automatically from `station_file`
-#   # input_files_prefix: null  # Will be generated automatically based on vic output
-#   input_file_precision: 2     # Default. Hardcoded. Works fine for 0.0625° grid.
-#   # start_date: null
-#   # end_date: null
-#   output_dir: /houston2/pritam/rat_mekong_v3/backend/data/rout_results
-#   uh: /houston2/pritam/rat_mekong_v3/backend/params/routing/uh.txt
+ROUTING PARAMETERS:  # (Optional; if passed, will override the `route_param_file` options)
+  flow_direction_file: /home/ec2-user/rat_v2/backend/params/routing/DRT_FDR_VIC.asc
+  velocity: 1.5
+  diff: 800
+  xmask: 5000
+  fraction: 1
+  # station_file: null        # Will be generated automatically from `station_file`
+  # input_files_prefix: null  # Will be generated automatically based on vic output
+  input_file_precision: 2     # Default. Hardcoded. Works fine for 0.0625° grid.
+  # start_date: null
+  # end_date: null
+  output_dir: /home/ec2-user/rat_v2/backend/data/rout_results
+  uh: /home/ec2-user/rat_v2/backend/params/routing/uh.txt
